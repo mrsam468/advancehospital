@@ -9,8 +9,7 @@ import java.io.*;
 import java.sql.SQLOutput;
 import java.util.*;
 
-import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
-import static org.apache.poi.ss.usermodel.CellType.STRING;
+import static org.apache.poi.ss.usermodel.CellType.*;
 
 public class HospitalManagement {
     private final String file_path = "C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\patientdetail.xlsx";
@@ -54,28 +53,35 @@ public class HospitalManagement {
         List<String> patients = new ArrayList<>();
 
         try (FileInputStream fileInputStream = new FileInputStream(file_path)) {
-            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            Row headerRow = sheet.getRow(0);
-            Iterator<Row> rowIterator = sheet.iterator();
+            Workbook workbook = WorkbookFactory.create(fileInputStream);
+            Sheet sheet = workbook.getSheetAt(0);
 
-            for (int i = 1; i < sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue;
+                String firstName = getCellStringValue(row.getCell(0));
+                String lastName = getCellStringValue(row.getCell(1));
+                String otherName = getCellStringValue(row.getCell(2));
+                String gender = getCellStringValue(row.getCell(3));
+                String ID = getCellStringValue(row.getCell(4));
+                String age = getCellStringValue(row.getCell(5));
+                String doctorAssigned = getCellStringValue(row.getCell(6));
+                String illness = getCellStringValue(row.getCell(7));
+                String outstandingBill = getCellStringValue(row.getCell(8));
+                System.out.println("Patient Id : " + ID + "\n" + "name : " + firstName + " " + lastName + " " + otherName + "\n" + "Gender : " + gender + "\n" + "Age : " + age + "\n" + "Doctor : " + doctorAssigned + "\n" + "Illness : " + illness + "Bill : " + outstandingBill);
+
                 System.out.println();
-                if (row != null) {
-                    String firstName = row.getCell(0).getStringCellValue();
-                    String lastName = row.getCell(1).getStringCellValue();
-                    String otherName = row.getCell(2).getStringCellValue();
-                    String gender = row.getCell(3).getStringCellValue();
-                    int ID = (int) row.getCell(4).getNumericCellValue();
-                    int age = (int) row.getCell(5).getNumericCellValue();
-                    String doctorAssigned = row.getCell(6).getStringCellValue();
-                    String illness = row.getCell(7).getStringCellValue();
-                    Double outstandingBill = row.getCell(8).getNumericCellValue();
 
-                }
             }
 
         }
+    }
+
+    private static String getCellStringValue(Cell cell) {
+        if (cell == null) return "";
+        else if (cell.getCellType() == STRING)
+            return cell.getStringCellValue();
+        else if (cell.getCellType() == NUMERIC)
+            return String.valueOf(cell.getNumericCellValue());
+        return null;
     }
 }
