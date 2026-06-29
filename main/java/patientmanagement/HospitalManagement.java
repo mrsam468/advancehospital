@@ -1,5 +1,7 @@
 package patientmanagement;
 
+import exception.InvalidPatientIdException;
+import exception.InvalidPatientNameException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -49,8 +51,8 @@ public class HospitalManagement {
         }
     }
 
-    public void viewAllPatients() throws IOException {
-        List<String> patients = new ArrayList<>();
+    public List<PatientsDetails> viewAllPatients() throws IOException {
+        List<PatientsDetails> patients = new ArrayList<>();
 
         try (FileInputStream fileInputStream = new FileInputStream(file_path)) {
             Workbook workbook = WorkbookFactory.create(fileInputStream);
@@ -58,30 +60,38 @@ public class HospitalManagement {
 
             for (Row row : sheet) {
                 if (row.getRowNum() == 0) continue;
-                String firstName = getCellStringValue(row.getCell(0));
-                String lastName = getCellStringValue(row.getCell(1));
-                String otherName = getCellStringValue(row.getCell(2));
-                String gender = getCellStringValue(row.getCell(3));
-                String ID = getCellStringValue(row.getCell(4));
-                String age = getCellStringValue(row.getCell(5));
-                String doctorAssigned = getCellStringValue(row.getCell(6));
-                String illness = getCellStringValue(row.getCell(7));
-                String outstandingBill = getCellStringValue(row.getCell(8));
-                System.out.println("Patient Id : " + ID + "\n" + "name : " + firstName + " " + lastName + " " + otherName + "\n" + "Gender : " + gender + "\n" + "Age : " + age + "\n" + "Doctor : " + doctorAssigned + "\n" + "Illness : " + illness + "Bill : " + outstandingBill);
+                String firstName = row.getCell(0).getStringCellValue();
+                String lastName = row.getCell(1).getStringCellValue();
+                String otherName = row.getCell(2).getStringCellValue();
+                String gender = row.getCell(3).getStringCellValue();
+                int ID = (int) row.getCell(4).getNumericCellValue();
+                int age = (int) row.getCell(5).getNumericCellValue();
+                String doctorAssigned = row.getCell(6).getStringCellValue();
+                String illness = row.getCell(7).getStringCellValue();
+                double outstandingBill = row.getCell(8).getNumericCellValue();
 
-                System.out.println();
-
+                patients.add(new PatientsDetails(firstName, lastName, otherName, Gender.valueOf(gender), ID, age, doctorAssigned, illness, outstandingBill));
             }
 
         }
+        return patients;
     }
 
-    private static String getCellStringValue(Cell cell) {
-        if (cell == null) return "";
-        else if (cell.getCellType() == STRING)
-            return cell.getStringCellValue();
-        else if (cell.getCellType() == NUMERIC)
-            return String.valueOf(cell.getNumericCellValue());
-        return null;
+    public PatientsDetails searchPatientWithId(int patientId) throws IOException {
+        for (PatientsDetails patientWithId : viewAllPatients()) {
+            if (patientWithId.getPatientId() == patientId) {
+                return patientWithId;
+            }
+        }
+        throw new InvalidPatientIdException("patient with id does not exist in this hospital");
+    }
+
+    public PatientsDetails searchPatientWithFullName(String fullName) throws IOException {
+        for (PatientsDetails patientWithName : viewAllPatients()) {
+            if (patientWithName.getFullName().equals(fullName)) {
+                return patientWithName;
+            }
+        }
+        throw new InvalidPatientNameException("patient with this name does not exist in this hospital");
     }
 }

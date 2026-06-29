@@ -105,16 +105,18 @@ public class PatientsDetails {
         return patientId;
     }
 
+    @Override
     public String toString() {
-        return
-                "age=" + age +
-                        ", firstName='" + firstName + '\'' +
-                        ", lastName='" + lastName + '\'' +
-                        ", otherName='" + otherName + '\'' +
-                        ", gender=" + gender +
-                        ", patientId=" + patientId +
-                        ", assignedDoctor='" + assignedDoctor + '\'' +
-                        ", illnessName='" + illnessName + '\'' +
-                        ", outstandingBill=" + outstandingBill;
+        return "PatientsDetails{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", otherName='" + otherName + '\'' +
+                ", gender=" + gender +
+                ", patientId=" + patientId +
+                ", age=" + age +
+                ", assignedDoctor='" + assignedDoctor + '\'' +
+                ", illnessName='" + illnessName + '\'' +
+                ", outstandingBill=" + outstandingBill +
+                '}';
     }
 }
