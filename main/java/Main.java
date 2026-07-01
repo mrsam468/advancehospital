@@ -16,6 +16,9 @@ public class Main {
         System.out.println();
         System.out.println(hospitalManagement.searchPatientWithFullName("SOPHIA BETTY DINE"));
         System.out.println(hospitalManagement.searchPatientWithId(1));
+        hospitalManagement.updateAssignedDoctor(1,"johnson");
+        hospitalManagement.updatePatientIllness(2,"HIV");
+        hospitalManagement.updateOutstandingBill(2,250.01);
 
 
     }

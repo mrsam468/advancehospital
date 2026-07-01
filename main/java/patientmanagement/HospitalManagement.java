@@ -94,4 +94,68 @@ public class HospitalManagement {
         }
         throw new InvalidPatientNameException("patient with this name does not exist in this hospital");
     }
+
+    public void updatePatientIllness(int patientId,String illness) throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(file_path);
+        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        for (Row row : sheet){
+            if (row.getRowNum()==0) continue;
+            int ID = (int) row.getCell(4).getNumericCellValue();
+            if (ID==patientId){
+                Cell cell = row.getCell(7);
+                cell.setCellValue(illness);
+            }
+            fileInputStream.close();
+            FileOutputStream fileOutputStream = new FileOutputStream(file_path);
+            workbook.write(fileOutputStream);
+            fileOutputStream.close();
+
+        }
+        System.out.println("excel file have benn updated successfully");
+        workbook.close();
+
+    }
+
+    public void updateAssignedDoctor(int patientId,String doctorName) throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(file_path);
+        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        for (Row row : sheet){
+            if (row.getRowNum()==0) continue;
+            int ID = (int) row.getCell(4).getNumericCellValue();
+            if (ID==patientId){
+                Cell cell = row.getCell(6);
+                cell.setCellValue(doctorName);
+            }
+            fileInputStream.close();
+            FileOutputStream fileOutputStream = new FileOutputStream(file_path);
+            workbook.write(fileOutputStream);
+            fileOutputStream.close();
+
+        }
+        System.out.println("excel file have benn updated successfully");
+        workbook.close();
+    }
+
+    public void updateOutstandingBill(int patientId,double outstandingBill) throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(file_path);
+        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        for (Row row : sheet){
+            if (row.getRowNum()==0) continue;
+            int ID = (int) row.getCell(4).getNumericCellValue();
+            if (ID==patientId){
+                Cell cell = row.getCell(8);
+                cell.setCellValue(outstandingBill);
+            }
+            fileInputStream.close();
+            FileOutputStream fileOutputStream = new FileOutputStream(file_path);
+            workbook.write(fileOutputStream);
+            fileOutputStream.close();
+
+        }
+        System.out.println("excel file have benn updated successfully");
+        workbook.close();
+    }
 }
