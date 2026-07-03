@@ -12,7 +12,7 @@ import java.util.*;
 
 public class HospitalManagement {
     private final String activePatientStorage = "C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\activepatient.xlsx";
-    private final String dischargedPatientStorage ="C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\dischargedpatient.xlsx";
+    private final String dischargedPatientStorage = "C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\dischargedpatient.xlsx";
 
     public void activePatientHeader() throws IOException {
         FileOutputStream fileOutputStream = new FileOutputStream(activePatientStorage);
@@ -26,7 +26,7 @@ public class HospitalManagement {
         workbook.write(fileOutputStream);
     }
 
-    public void dischargedPatientHeader() throws IOException{
+    public void dischargedPatientHeader() throws IOException {
         FileOutputStream fileOutputStream = new FileOutputStream(dischargedPatientStorage);
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("patientDetails");
@@ -170,39 +170,67 @@ public class HospitalManagement {
     }
 
     public void dischargePatient(int patientId) throws IOException {
-       FileInputStream fileInputStream = new FileInputStream(dischargedPatientStorage);
-       FileInputStream fileInputStream1 = new FileInputStream(activePatientStorage);
-       XSSFWorkbook workbook1 = new XSSFWorkbook(fileInputStream1);
-       XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-       XSSFSheet sheet = workbook.getSheetAt(0);
-       XSSFSheet sheet1 = workbook1.getSheetAt(0);
-       Row row = sheet.createRow(sheet.getLastRowNum()+1);
+        FileInputStream fileInputStream = new FileInputStream(dischargedPatientStorage);
+        FileInputStream fileInputStream1 = new FileInputStream(activePatientStorage);
+        XSSFWorkbook workbook1 = new XSSFWorkbook(fileInputStream1);
+        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        XSSFSheet sheet1 = workbook1.getSheetAt(0);
+        Row row = sheet.createRow(sheet.getLastRowNum() + 1);
 
-       for (int i = sheet1.getLastRowNum(); i>=1;i--){
-           Row row1 = sheet1.getRow(i);
-       if(row1 == null) continue;
-       int ID = (int) row1.getCell(4).getNumericCellValue();
-           if ( ID== patientId){
-               row.createCell(0).setCellValue(row1.getCell(0).getStringCellValue());
-               row.createCell(1).setCellValue(row1.getCell(1).getStringCellValue());
-               row.createCell(2).setCellValue(row1.getCell(2).getStringCellValue());
-               row.createCell(3).setCellValue(row1.getCell(3).getStringCellValue());
-               row.createCell(4).setCellValue(row1.getCell(4).getNumericCellValue());
-               row.createCell(5).setCellValue(row1.getCell(5).getNumericCellValue());
-               row.createCell(6).setCellValue(row1.getCell(6).getStringCellValue());
-               row.createCell(7).setCellValue(row1.getCell(7).getStringCellValue());
-               row.createCell(8).setCellValue(row1.getCell(8).getNumericCellValue());
+        for (int i = sheet1.getLastRowNum(); i >= 1; i--) {
+            Row row1 = sheet1.getRow(i);
+            if (row1 == null) continue;
+            int ID = (int) row1.getCell(4).getNumericCellValue();
+            if (ID == patientId) {
+                row.createCell(0).setCellValue(row1.getCell(0).getStringCellValue());
+                row.createCell(1).setCellValue(row1.getCell(1).getStringCellValue());
+                row.createCell(2).setCellValue(row1.getCell(2).getStringCellValue());
+                row.createCell(3).setCellValue(row1.getCell(3).getStringCellValue());
+                row.createCell(4).setCellValue(row1.getCell(4).getNumericCellValue());
+                row.createCell(5).setCellValue(row1.getCell(5).getNumericCellValue());
+                row.createCell(6).setCellValue(row1.getCell(6).getStringCellValue());
+                row.createCell(7).setCellValue(row1.getCell(7).getStringCellValue());
+                row.createCell(8).setCellValue(row1.getCell(8).getNumericCellValue());
 
-               sheet1.removeRow(row1);
-               int totalRow = sheet1.getLastRowNum();
-               if(totalRow>=2){
-                   sheet1.shiftRows(2,totalRow,-1);
-               }
-           }
-       }
-       FileOutputStream fileOutputStream = new FileOutputStream(dischargedPatientStorage);
-       FileOutputStream fileOutputStream1 = new FileOutputStream(activePatientStorage);
-       workbook1.write(fileOutputStream1);
-       workbook.write(fileOutputStream);
+                sheet1.removeRow(row1);
+                int totalRow = sheet1.getLastRowNum();
+                if (totalRow >= 2) {
+                    sheet1.shiftRows(2, totalRow, -1);
+                }
+            }
+        }
+        FileOutputStream fileOutputStream = new FileOutputStream(dischargedPatientStorage);
+        FileOutputStream fileOutputStream1 = new FileOutputStream(activePatientStorage);
+        workbook1.write(fileOutputStream1);
+        workbook.write(fileOutputStream);
+    }
+
+    public void hopitalReport() throws IOException {
+        FileInputStream activePatients = new FileInputStream(activePatientStorage);
+        FileInputStream dischargedPatients = new FileInputStream(dischargedPatientStorage);
+        XSSFWorkbook activePatinetWorkBook = new XSSFWorkbook(activePatients);
+        XSSFWorkbook dischargePatientWorkBook = new XSSFWorkbook(dischargedPatients);
+        XSSFSheet activePatientSheet = activePatinetWorkBook.getSheetAt(0);
+        XSSFSheet dischargedPatientSheet = dischargePatientWorkBook.getSheetAt(0);
+        List<Double> num = new ArrayList<>();
+        double sum = 0;
+        int totalNumberOfPatients = activePatientSheet.getLastRowNum() + dischargedPatientSheet.getLastRowNum();
+        int totalNumberOfDischargedPatient = dischargedPatientSheet.getLastRowNum();
+        for (Row row : activePatientSheet) {
+            if (row.getRowNum() == 0) continue;
+            num.add(row.getCell(8).getNumericCellValue());
+        }
+        for (double n : num) {
+            sum += n;
+        }
+        activePatients.close();
+        dischargedPatients.close();
+        activePatinetWorkBook.close();
+        dischargedPatients.close();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File("C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\Report.txt")));
+        writer.write("total NumberOfPatients: " + totalNumberOfPatients + "\n" + "totalOustandingbil: " + sum + "\n" + "totalnumberofdischargedpatient : " + totalNumberOfDischargedPatient);
+        writer.close();
+        System.out.println("total NumberOfPatients: " + totalNumberOfPatients + "\n" + "totalOustandingbil: " + sum + "\n" + "totalnumberofdischargedpatient : " + totalNumberOfDischargedPatient);
     }
 }
