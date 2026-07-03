@@ -170,40 +170,40 @@ public class HospitalManagement {
     }
 
     public void dischargePatient(int patientId) throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(dischargedPatientStorage);
-        FileInputStream fileInputStream1 = new FileInputStream(activePatientStorage);
-        XSSFWorkbook workbook1 = new XSSFWorkbook(fileInputStream1);
-        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-        XSSFSheet sheet = workbook.getSheetAt(0);
-        XSSFSheet sheet1 = workbook1.getSheetAt(0);
-        Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+        FileInputStream dischargedPatientInputStream = new FileInputStream(dischargedPatientStorage);
+        FileInputStream activePatientInputStream = new FileInputStream(activePatientStorage);
+        XSSFWorkbook activePatientWorkbook = new XSSFWorkbook(activePatientInputStream);
+        XSSFWorkbook dischargedPatientWorkbook = new XSSFWorkbook(dischargedPatientInputStream);
+        XSSFSheet dischargedPatientSheet = dischargedPatientWorkbook.getSheetAt(0);
+        XSSFSheet activePatientSheet = activePatientWorkbook.getSheetAt(0);
+        Row dischargedPatientRow = dischargedPatientSheet.createRow(dischargedPatientSheet.getLastRowNum() + 1);
 
-        for (int i = sheet1.getLastRowNum(); i >= 1; i--) {
-            Row row1 = sheet1.getRow(i);
-            if (row1 == null) continue;
-            int ID = (int) row1.getCell(4).getNumericCellValue();
+        for (int i = activePatientSheet.getLastRowNum(); i >= 1; i--) {
+            Row activePatientRow = activePatientSheet.getRow(i);
+            if (activePatientRow == null) continue;
+            int ID = (int) activePatientRow.getCell(4).getNumericCellValue();
             if (ID == patientId) {
-                row.createCell(0).setCellValue(row1.getCell(0).getStringCellValue());
-                row.createCell(1).setCellValue(row1.getCell(1).getStringCellValue());
-                row.createCell(2).setCellValue(row1.getCell(2).getStringCellValue());
-                row.createCell(3).setCellValue(row1.getCell(3).getStringCellValue());
-                row.createCell(4).setCellValue(row1.getCell(4).getNumericCellValue());
-                row.createCell(5).setCellValue(row1.getCell(5).getNumericCellValue());
-                row.createCell(6).setCellValue(row1.getCell(6).getStringCellValue());
-                row.createCell(7).setCellValue(row1.getCell(7).getStringCellValue());
-                row.createCell(8).setCellValue(row1.getCell(8).getNumericCellValue());
+                dischargedPatientRow.createCell(0).setCellValue(activePatientRow.getCell(0).getStringCellValue());
+                dischargedPatientRow.createCell(1).setCellValue(activePatientRow.getCell(1).getStringCellValue());
+                dischargedPatientRow.createCell(2).setCellValue(activePatientRow.getCell(2).getStringCellValue());
+                dischargedPatientRow.createCell(3).setCellValue(activePatientRow.getCell(3).getStringCellValue());
+                dischargedPatientRow.createCell(4).setCellValue(activePatientRow.getCell(4).getNumericCellValue());
+                dischargedPatientRow.createCell(5).setCellValue(activePatientRow.getCell(5).getNumericCellValue());
+                dischargedPatientRow.createCell(6).setCellValue(activePatientRow.getCell(6).getStringCellValue());
+                dischargedPatientRow.createCell(7).setCellValue(activePatientRow.getCell(7).getStringCellValue());
+                dischargedPatientRow.createCell(8).setCellValue(activePatientRow.getCell(8).getNumericCellValue());
 
-                sheet1.removeRow(row1);
-                int totalRow = sheet1.getLastRowNum();
+                activePatientSheet.removeRow(activePatientRow);
+                int totalRow = activePatientSheet.getLastRowNum();
                 if (totalRow >= 2) {
-                    sheet1.shiftRows(2, totalRow, -1);
+                    activePatientSheet.shiftRows(2, totalRow, -1);
                 }
             }
         }
         FileOutputStream fileOutputStream = new FileOutputStream(dischargedPatientStorage);
         FileOutputStream fileOutputStream1 = new FileOutputStream(activePatientStorage);
-        workbook1.write(fileOutputStream1);
-        workbook.write(fileOutputStream);
+        activePatientWorkbook.write(fileOutputStream1);
+        dischargedPatientWorkbook.write(fileOutputStream);
     }
 
     public void hopitalReport() throws IOException {
