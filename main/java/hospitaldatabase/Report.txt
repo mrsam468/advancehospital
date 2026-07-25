@@ -1,0 +1,3 @@
+total NumberOfPatients: 4
+totalOustandingbil: 1360.05
+totalnumberofdischargedpatient : 1

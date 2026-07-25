@@ -1,7 +1,8 @@
-package patientmanagement;
+package hopitalentities;
 
 import exception.InvalidPatientIdException;
 import exception.InvalidPatientNameException;
+import exception.InvalidUserIdException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -9,8 +10,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class HospitalManagement {
+public class HospitalSystem {
     private final String activePatientStorage = "C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\activepatient.xlsx";
     private final String dischargedPatientStorage = "C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\dischargedpatient.xlsx";
 
@@ -18,7 +20,7 @@ public class HospitalManagement {
         FileOutputStream fileOutputStream = new FileOutputStream(activePatientStorage);
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("patientDetails");
-        String[] header = {"FirstName", "LastName", "Othername", "Gender", "ID", "Age", "AssignedDoctor", "illness", "Outstandingbill"};
+        String[] header = {"FirstName", "LastName", "Othername", "Gender", "ID", "Age", "AssignedDoctor", "illness", "Outstandingbill", "AssignedWardName"};
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < header.length; i++) {
             headerRow.createCell(i).setCellValue(header[i]);
@@ -29,7 +31,7 @@ public class HospitalManagement {
     public void dischargedPatientHeader() throws IOException {
         FileOutputStream fileOutputStream = new FileOutputStream(dischargedPatientStorage);
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = workbook.createSheet("patientDetails");
+        XSSFSheet sheet = workbook.createSheet("patients");
         String[] header = {"FirstName", "LastName", "Othername", "Gender", "ID", "Age", "AssignedDoctor", "illness", "Outstandingbill"};
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < header.length; i++) {
@@ -38,31 +40,51 @@ public class HospitalManagement {
         workbook.write(fileOutputStream);
     }
 
-    public void registerPatient(PatientsDetails patientsDetails) throws IOException {
-        try (FileInputStream fileInputStream = new FileInputStream(activePatientStorage);
-             Workbook workbook = new XSSFWorkbook(fileInputStream)) {
+    public void registerPatient(Patient patient) throws IOException {
+        HashSet<Integer> idCheck = new HashSet<>();
+        try (FileInputStream fileInputStream = new FileInputStream(activePatientStorage)) {
+            Workbook workbook = WorkbookFactory.create(fileInputStream);
             Sheet sheet = workbook.getSheetAt(0);
-            int lastRow = sheet.getLastRowNum();
-            Row newRow = sheet.createRow(lastRow + 1);
-            newRow.createCell(0).setCellValue(patientsDetails.getFirstName());
-            newRow.createCell(1).setCellValue(patientsDetails.getLastName());
-            newRow.createCell(2).setCellValue(patientsDetails.getOtherName());
-            newRow.createCell(3).setCellValue(String.valueOf(patientsDetails.getGender()));
-            newRow.createCell(4).setCellValue(patientsDetails.getPatientId());
-            newRow.createCell(5).setCellValue(patientsDetails.getAge());
-            newRow.createCell(6).setCellValue(patientsDetails.getAssignedDoctor());
-            newRow.createCell(7).setCellValue(patientsDetails.getLllnessName());
-            newRow.createCell(8).setCellValue(patientsDetails.getOutstandingBill());
 
-            try (FileOutputStream fileOutputStream = new FileOutputStream(activePatientStorage)) {
-                workbook.write(fileOutputStream);
-                System.out.println("patient details saved");
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue;
+                int ID = (int) row.getCell(4).getNumericCellValue();
+                idCheck.add(ID);
+            }
+            if (idCheck.contains(patient.getID())) try {
+                throw new InvalidUserIdException("patient with ID already exist");
+            } catch (InvalidUserIdException e) {
+                System.out.println(e.getMessage());
+            }
+            else {
+                try (FileInputStream patientInputStream = new FileInputStream(activePatientStorage);
+                     Workbook book = new XSSFWorkbook(patientInputStream)) {
+                    Sheet booksheet = book.getSheetAt(0);
+                    int lastRow = booksheet.getLastRowNum();
+                    Row newRow = booksheet.createRow(lastRow + 1);
+                    newRow.createCell(0).setCellValue(patient.getFirstName());
+                    newRow.createCell(1).setCellValue(patient.getLastName());
+                    newRow.createCell(2).setCellValue(patient.getOtherName());
+                    newRow.createCell(3).setCellValue(String.valueOf(patient.getGender()));
+                    newRow.createCell(4).setCellValue(patient.getID());
+                    newRow.createCell(5).setCellValue(patient.getAge());
+                    newRow.createCell(6).setCellValue(patient.getAssignedDoctor());
+                    newRow.createCell(7).setCellValue(patient.getIllnessName());
+                    newRow.createCell(8).setCellValue(patient.getOutstandingBill());
+                    newRow.createCell(9).setCellValue(patient.getWardAssigned());
+
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(activePatientStorage)) {
+                        book.write(fileOutputStream);
+                        System.out.println("patient details saved");
+                    }
+                }
             }
         }
+
     }
 
-    public List<PatientsDetails> viewAllPatients() throws IOException {
-        List<PatientsDetails> patients = new ArrayList<>();
+    private Map<Integer, Patient> allPatientsWithIdAsKey() throws IOException {
+        Map<Integer, Patient> patients = new HashMap<>();
 
         try (FileInputStream fileInputStream = new FileInputStream(activePatientStorage)) {
             Workbook workbook = WorkbookFactory.create(fileInputStream);
@@ -79,30 +101,32 @@ public class HospitalManagement {
                 String doctorAssigned = row.getCell(6).getStringCellValue();
                 String illness = row.getCell(7).getStringCellValue();
                 double outstandingBill = row.getCell(8).getNumericCellValue();
+                String wardAssigned = row.getCell(9).getStringCellValue();
 
-                patients.add(new PatientsDetails(firstName, lastName, otherName, Gender.valueOf(gender), ID, age, doctorAssigned, illness, outstandingBill));
+                patients.put(ID, new Patient(firstName, lastName, otherName, Gender.valueOf(gender), ID, age, doctorAssigned, illness, outstandingBill, wardAssigned));
             }
 
         }
         return patients;
     }
 
-    public PatientsDetails searchPatientWithId(int patientId) throws IOException {
-        for (PatientsDetails patientWithId : viewAllPatients()) {
-            if (patientWithId.getPatientId() == patientId) {
-                return patientWithId;
-            }
+    public Patient searchPatientWithId(int patientId) throws IOException {
+        if (!allPatientsWithIdAsKey().containsKey(patientId)) {
+            throw new InvalidPatientIdException("this patient do not exist");
+        } else {
+            return allPatientsWithIdAsKey().get(patientId);
         }
-        throw new InvalidPatientIdException("patient with id does not exist in this hospital");
     }
 
-    public PatientsDetails searchPatientWithFullName(String fullName) throws IOException {
-        for (PatientsDetails patientWithName : viewAllPatients()) {
-            if (patientWithName.getFullName().equals(fullName)) {
-                return patientWithName;
+    public List<Patient> searchPatientWithName(String firstName, String lastName, String otherName) throws IOException {
+        String fullName = firstName + " " + lastName + " " + otherName;
+        List<Patient> allPatientsWithName = new ArrayList<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> {
+            if (v.getFUllName().equals(fullName)) {
+                allPatientsWithName.add(v);
             }
-        }
-        throw new InvalidPatientNameException("patient with this name does not exist in this hospital");
+        });
+        return allPatientsWithName;
     }
 
     public void updatePatientIllness(int patientId, String illness) throws IOException {
@@ -169,6 +193,55 @@ public class HospitalManagement {
         workbook.close();
     }
 
+    public List<Patient> patientsSortedByName() throws IOException {
+        List<Patient> patients = new ArrayList<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> patients.add(v));
+        return patients.stream().sorted((p1, p2) -> p1.getFUllName().compareTo(p2.getFUllName()))
+                .collect(Collectors.toList());
+    }
+
+    public List<Patient> patientsSortedByAge() throws IOException {
+        List<Patient> patients = new ArrayList<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> patients.add(v));
+        return patients.stream().sorted((p1, p2) -> Integer.compare(p1.getAge(), p2.getAge())).toList();
+    }
+
+    public List<Patient> patientsSortedByOutstandingBill() throws IOException {
+        List<Patient> patients = new ArrayList<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> patients.add(v));
+        return patients.stream().sorted((p1, p2) -> Double.compare(p1.getOutstandingBill(), p2.getOutstandingBill())).toList();
+    }
+
+    public List<Patient> patientsAssignedToDoctor(String doctorsFullname) throws IOException {
+        List<Patient> patientsAssingedToDoctor = new ArrayList<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> {
+            if (v.getAssignedDoctor().equals(doctorsFullname)) {
+                patientsAssingedToDoctor.add(v);
+            }
+        });
+        return patientsAssingedToDoctor;
+    }
+
+    public List<Patient> patientsSufferingFromIllness(String illnessName) throws IOException {
+        List<Patient> patientsSufferingFromIllness = new ArrayList<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> {
+            if (v.getIllnessName().equals(illnessName)) {
+                patientsSufferingFromIllness.add(v);
+            }
+        });
+        return patientsSufferingFromIllness;
+    }
+
+    public List<Patient> patientsWithOutstandingBill(double outstandingBill) throws IOException {
+        List<Patient> patientsAssingedToDoctor = new ArrayList<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> {
+            if (v.getOutstandingBill() > outstandingBill) {
+                patientsAssingedToDoctor.add(v);
+            }
+        });
+        return patientsAssingedToDoctor;
+    }
+
     public void dischargePatient(int patientId) throws IOException {
         FileInputStream dischargedPatientInputStream = new FileInputStream(dischargedPatientStorage);
         FileInputStream activePatientInputStream = new FileInputStream(activePatientStorage);
@@ -228,7 +301,7 @@ public class HospitalManagement {
         dischargedPatients.close();
         activePatinetWorkBook.close();
         dischargedPatients.close();
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File("C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\Report.txt")));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\Report.txt"));
         writer.write("total NumberOfPatients: " + totalNumberOfPatients + "\n" + "totalOustandingbil: " + sum + "\n" + "totalnumberofdischargedpatient : " + totalNumberOfDischargedPatient);
         writer.close();
         System.out.println("total NumberOfPatients: " + totalNumberOfPatients + "\n" + "totalOustandingbil: " + sum + "\n" + "totalnumberofdischargedpatient : " + totalNumberOfDischargedPatient);
