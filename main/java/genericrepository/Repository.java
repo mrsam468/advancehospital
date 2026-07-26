@@ -34,9 +34,8 @@ public class Repository<T> {
         genericRepo.remove(Id);
     }
 
-    public List<T> getAll() {
-        List<T> all = new ArrayList<>();
-        genericRepo.forEach((k, v) -> all.add(v));
-        return all;
+    public Map<Integer,T> getAll() {
+
+        return genericRepo;
     }
 }

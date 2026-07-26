@@ -16,30 +16,6 @@ public class HospitalSystem {
     private final String activePatientStorage = "C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\activepatient.xlsx";
     private final String dischargedPatientStorage = "C:\\Users\\USER-PC\\IdeaProjects\\advancehospitalmanagement\\src\\main\\java\\hospitaldatabase\\dischargedpatient.xlsx";
 
-    public void activePatientHeader() throws IOException {
-        FileOutputStream fileOutputStream = new FileOutputStream(activePatientStorage);
-        XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = workbook.createSheet("patientDetails");
-        String[] header = {"FirstName", "LastName", "Othername", "Gender", "ID", "Age", "AssignedDoctor", "illness", "Outstandingbill", "AssignedWardName"};
-        Row headerRow = sheet.createRow(0);
-        for (int i = 0; i < header.length; i++) {
-            headerRow.createCell(i).setCellValue(header[i]);
-        }
-        workbook.write(fileOutputStream);
-    }
-
-    public void dischargedPatientHeader() throws IOException {
-        FileOutputStream fileOutputStream = new FileOutputStream(dischargedPatientStorage);
-        XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = workbook.createSheet("patients");
-        String[] header = {"FirstName", "LastName", "Othername", "Gender", "ID", "Age", "AssignedDoctor", "illness", "Outstandingbill"};
-        Row headerRow = sheet.createRow(0);
-        for (int i = 0; i < header.length; i++) {
-            headerRow.createCell(i).setCellValue(header[i]);
-        }
-        workbook.write(fileOutputStream);
-    }
-
     public void registerPatient(Patient patient) throws IOException {
         HashSet<Integer> idCheck = new HashSet<>();
         try (FileInputStream fileInputStream = new FileInputStream(activePatientStorage)) {
@@ -277,6 +253,17 @@ public class HospitalSystem {
         FileOutputStream fileOutputStream1 = new FileOutputStream(activePatientStorage);
         activePatientWorkbook.write(fileOutputStream1);
         dischargedPatientWorkbook.write(fileOutputStream);
+    }
+
+    public Map<String,Integer> numberOfPeopleAssignedInToAWard() throws IOException {
+        List<String> wardAssigned = new ArrayList<>();
+        Map<String,Integer> patientCount = new HashMap<>();
+        allPatientsWithIdAsKey().forEach((k,v)->wardAssigned.add(v.getWardAssigned()));
+        for (String ward : wardAssigned){
+            Integer count = patientCount.get(ward);
+            patientCount.put(ward,count+1);
+        }
+        return patientCount;
     }
 
     public void hopitalReport() throws IOException {
