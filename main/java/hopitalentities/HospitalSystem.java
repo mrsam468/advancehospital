@@ -255,13 +255,13 @@ public class HospitalSystem {
         dischargedPatientWorkbook.write(fileOutputStream);
     }
 
-    public Map<String,Integer> numberOfPeopleAssignedInToAWard() throws IOException {
+    public Map<String, Integer> numberOfPeopleAssignedInToAWard() throws IOException {
         List<String> wardAssigned = new ArrayList<>();
-        Map<String,Integer> patientCount = new HashMap<>();
-        allPatientsWithIdAsKey().forEach((k,v)->wardAssigned.add(v.getWardAssigned()));
-        for (String ward : wardAssigned){
+        Map<String, Integer> patientCount = new HashMap<>();
+        allPatientsWithIdAsKey().forEach((k, v) -> wardAssigned.add(v.getWardAssigned()));
+        for (String ward : wardAssigned) {
             Integer count = patientCount.get(ward);
-            patientCount.put(ward,count+1);
+            patientCount.put(ward, count + 1);
         }
         return patientCount;
     }

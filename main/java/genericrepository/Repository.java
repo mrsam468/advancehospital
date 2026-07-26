@@ -34,7 +34,7 @@ public class Repository<T> {
         genericRepo.remove(Id);
     }
 
-    public Map<Integer,T> getAll() {
+    public Map<Integer, T> getAll() {
 
         return genericRepo;
     }
